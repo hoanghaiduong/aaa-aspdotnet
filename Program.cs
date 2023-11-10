@@ -1,14 +1,20 @@
-﻿using BAL.IServices;
-using BAL.Services;
-using DAL.Entities;
-using DAL.IRepositories;
-using DAL.Repositories;
+﻿using aaa_aspdotnet.Filters;
+using aaa_aspdotnet.Middlewares;
+using aaa_aspdotnet.src.BAL.IServices;
+using aaa_aspdotnet.src.BAL.Services;
+using aaa_aspdotnet.src.DAL.Entities;
+using aaa_aspdotnet.src.DAL.IRepositories;
+using aaa_aspdotnet.src.DAL.Repositories;
+using aaa_aspdotnet.src.Exceptions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Newtonsoft.Json;
 using System.Text;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,7 +46,6 @@ builder.Services.AddDbContext<AppDbContext>(x=>x.UseSqlServer(configuration.GetC
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
-
 builder.Services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
 
 builder.Services.AddEndpointsApiExplorer();
@@ -49,7 +54,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v3",new OpenApiInfo { Title = "TEST API AUTHENTICATION AND AUTHORZATION", Version = "v3" });
-      // Define the Bearer token scheme for Swagger
+ 
+                                   // Define the Bearer token scheme for Swagger
     var securityScheme = new OpenApiSecurityScheme
     {
         Name = "JWT Authentication",
@@ -64,18 +70,26 @@ builder.Services.AddSwaggerGen(c =>
             Type = ReferenceType.SecurityScheme
         }
     };
-
+  //  c.OperationFilter<AuthResponsesOperationFilter>();
     c.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme, securityScheme);
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         { securityScheme, new string[] { } }
     });
 });
-builder.Services.AddControllers().AddNewtonsoftJson();
+builder.Services.AddControllers(c =>
+{
+    c.Filters.Add<CustomExceptionFilterAttribute>();
+}).AddNewtonsoftJson(options =>
+{
+    options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+  
+});
 
 var app = builder.Build();
 
 
+app.UseExceptionMiddleware();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -85,6 +99,9 @@ if (app.Environment.IsDevelopment())
     {
         c.SwaggerEndpoint("/swagger/v3/swagger.json", "Your API V3");
     });
+
+ 
+
 }
 
 app.UseHttpsRedirection();
@@ -93,5 +110,5 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
+app.UseStaticFiles();
 app.Run();

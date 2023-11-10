@@ -3,7 +3,7 @@
 using System.Data;
 
 
-namespace aaa_aspdotnet
+namespace aaa_aspdotnet.src.Common.Helpers
 {
     public static class SQLHelper
     {
@@ -18,23 +18,23 @@ namespace aaa_aspdotnet
         }
         private static readonly string _connectionString = GetConnectionString();
 
-        public static List<Dictionary<string, object>> ExecuteStoredProcedure(string storedProcedureName, Dictionary<string, object>? parameters =null)
+        public static List<Dictionary<string, object>> ExecuteStoredProcedure(string storedProcedureName, Dictionary<string, object>? parameters = null)
+        {
+            using (SqlConnection connection = new SqlConnection(_connectionString))
             {
-                using (SqlConnection connection = new SqlConnection(_connectionString))
+                connection.Open();
+
+                using (SqlCommand command = connection.CreateCommand())
                 {
-                    connection.Open();
+                    command.CommandText = storedProcedureName;
+                    command.CommandType = CommandType.StoredProcedure;
 
-                    using (SqlCommand command = connection.CreateCommand())
-                    {
-                        command.CommandText = storedProcedureName;
-                        command.CommandType = CommandType.StoredProcedure;
+                    AddParameters(command, parameters);
 
-                        AddParameters(command, parameters);
-
-                        return ExecuteReader(command);
-                    }
+                    return ExecuteReader(command);
                 }
             }
+        }
         public static int ExecuteNonQuery(string sqlQuery, Dictionary<string, object> parameters = null)
         {
             using (SqlConnection connection = new SqlConnection(_connectionString))
@@ -86,58 +86,58 @@ namespace aaa_aspdotnet
         }
 
         public static List<Dictionary<string, object>> ExecuteQuery(string sqlQuery, Dictionary<string, object> parameters = null)
+        {
+            using (SqlConnection connection = new SqlConnection(_connectionString))
             {
-                using (SqlConnection connection = new SqlConnection(_connectionString))
+                connection.Open();
+
+                using (SqlCommand command = connection.CreateCommand())
                 {
-                    connection.Open();
+                    command.CommandText = sqlQuery;
 
-                    using (SqlCommand command = connection.CreateCommand())
-                    {
-                        command.CommandText = sqlQuery;
+                    AddParameters(command, parameters);
 
-                        AddParameters(command, parameters);
-
-                        return ExecuteReader(command);
-                    }
+                    return ExecuteReader(command);
                 }
             }
+        }
 
-            private static void AddParameters(SqlCommand command, Dictionary<string, object> parameters)
+        private static void AddParameters(SqlCommand command, Dictionary<string, object> parameters)
+        {
+            if (parameters != null)
             {
-                if (parameters != null)
+                foreach (var parameter in parameters)
                 {
-                    foreach (var parameter in parameters)
-                    {
-                        command.Parameters.AddWithValue(parameter.Key, parameter.Value);
-                    }
+                    command.Parameters.AddWithValue(parameter.Key, parameter.Value);
                 }
             }
+        }
 
-            private static List<Dictionary<string, object>> ExecuteReader(SqlCommand command)
+        private static List<Dictionary<string, object>> ExecuteReader(SqlCommand command)
+        {
+            using (SqlDataReader reader = command.ExecuteReader())
             {
-                using (SqlDataReader reader = command.ExecuteReader())
+                List<Dictionary<string, object>> results = new List<Dictionary<string, object>>();
+
+                while (reader.Read())
                 {
-                    List<Dictionary<string, object>> results = new List<Dictionary<string, object>>();
+                    var result = new Dictionary<string, object>();
 
-                    while (reader.Read())
+                    for (int i = 0; i < reader.FieldCount; i++)
                     {
-                        var result = new Dictionary<string, object>();
+                        string columnName = reader.GetName(i);
+                        object columnValue = reader.GetValue(i);
 
-                        for (int i = 0; i < reader.FieldCount; i++)
-                        {
-                            string columnName = reader.GetName(i);
-                            object columnValue = reader.GetValue(i);
-
-                            result[columnName] = columnValue;
-                        }
-
-                        results.Add(result);
+                        result[columnName] = columnValue;
                     }
 
-                    return results;
+                    results.Add(result);
                 }
+
+                return results;
             }
-     
+        }
+
 
 
 
