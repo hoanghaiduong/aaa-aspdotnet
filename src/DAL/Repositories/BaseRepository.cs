@@ -31,6 +31,10 @@ namespace aaa_aspdotnet.src.DAL.Repositories
         {
             return await _set.Where(expression).ToListAsync();
         }
+        public IQueryable<T> FindAll()
+        {
+            return  _set.AsNoTracking();
+        }
 
         public async Task<List<T>> GetAll()
         {

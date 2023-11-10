@@ -1,7 +1,7 @@
-﻿using aaa_aspdotnet.Filters;
-using aaa_aspdotnet.src.BAL.IServices;
+﻿using aaa_aspdotnet.src.BAL.IServices;
 using aaa_aspdotnet.src.Common.DTO;
 using aaa_aspdotnet.src.Common.Helpers;
+using aaa_aspdotnet.src.Common.pagination;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -120,9 +120,37 @@ namespace aaa_aspdotnet.src.Controllers
 
         [HttpGet("get-users")]
 
-        public async Task<ActionResult<Response>> GetUsers([FromQuery] UserFilterDto filter)
+        public async Task<ActionResult<Response>> GetUsers([FromQuery] PaginationFilterDto filter)
         {
-            return Ok(filter);
+            var users=  _userService.GetUsers(filter);
+            var metadata = new
+            {
+                users.TotalCount,
+                users.PageSize,
+                users.CurrentPage,
+                users.TotalPages,
+                users.HasNext,
+                users.HasPrevious
+            };
+            return Ok(new Response(HttpStatusCode.OK,"Lấy danh sách người dùng thành công",new
+            {
+                users,
+                metadata
+            }));
+            // Sử dụng các thuộc tính của filter để thực hiện truy vấn với procedure
+            // Sau đó, trả về kết quả như đã thực hiện trước đó
+        }
+
+        [HttpGet("get-user-by-Id")]
+
+        public async Task<ActionResult<Response>> GetUserById([FromQuery] string id)
+        {
+            var user=await _userService.GetUserById(id);
+             if(user==null)
+            {
+                return NotFound(new Response(HttpStatusCode.NotFound,"User not found"));
+            }    
+             return Ok(user);
             // Sử dụng các thuộc tính của filter để thực hiện truy vấn với procedure
             // Sau đó, trả về kết quả như đã thực hiện trước đó
         }

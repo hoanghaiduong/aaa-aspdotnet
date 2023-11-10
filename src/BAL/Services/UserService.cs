@@ -1,14 +1,15 @@
 ﻿using aaa_aspdotnet.src.BAL.IServices;
 using aaa_aspdotnet.src.Common.DTO;
+using aaa_aspdotnet.src.Common.Enums;
 using aaa_aspdotnet.src.Common.Helpers;
+using aaa_aspdotnet.src.Common.pagination;
+using aaa_aspdotnet.src.Common.shared;
 using aaa_aspdotnet.src.DAL.Entities;
 using aaa_aspdotnet.src.DAL.IRepositories;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
+using System.Linq;
+using System.Linq.Expressions;
 using System.Net;
 
 
@@ -64,6 +65,7 @@ namespace aaa_aspdotnet.src.BAL.Services
             return await userRepository.FindByCondition(u => u.UserId == id);
         }
 
+        
      
         public async Task<Response> CreateOrUpdateUserWithHelper(CreateOrUpdateUserDTO dto, string? userId)
         {
@@ -117,5 +119,70 @@ namespace aaa_aspdotnet.src.BAL.Services
             }
         }
 
+
+        private Expression<Func<T, bool>> BuildSearchExpression<T>(string[] columns, string searchKeyword)
+        {
+            var parameter = Expression.Parameter(typeof(T), "entity");
+            var containsMethod = typeof(string).GetMethod("Contains", new[] { typeof(string) });
+
+            Expression searchExpression = null; // Biểu thức tìm kiếm gốc
+
+            foreach (var column in columns)
+            {
+                var propertyExpression = Expression.Property(parameter, column);
+                var searchValue = Expression.Constant(searchKeyword);
+
+                var containsExpression = Expression.Call(propertyExpression, containsMethod, searchValue);
+
+                // Thêm biểu thức con vào biểu thức tìm kiếm gốc
+                if (searchExpression == null)
+                {
+                    searchExpression = containsExpression;
+                }
+                else
+                {
+                    searchExpression = Expression.OrElse(searchExpression, containsExpression);
+                }
+            }
+
+            return Expression.Lambda<Func<T, bool>>(searchExpression, parameter);
+        }
+
+
+        public PagedList<User> GetUsers(PaginationFilterDto dto)
+        {
+
+            try
+            {
+                var query = userRepository.FindAll();
+                if (!dto.SearchColumns.IsNullOrEmpty() && !dto.Search.IsNullOrEmpty())
+                {
+                    // Split the search columns into an array
+                    var columns = dto.SearchColumns.Split(',');
+
+                    // Create an expression for the search
+                    var searchExpression = BuildSearchExpression<User>(columns, dto.Search);
+
+                    // Apply the search expression to the query
+                    query = query.Where(searchExpression);
+                }
+                if (!dto.OrderByColumn.IsNullOrEmpty())
+                {
+                    query = (dto.SortDirection == ESortDirection.DESC)
+                        ? query.OrderByDescending(SharedClass.GetKeySelector<User>(dto.OrderByColumn))
+                        : query.OrderBy(SharedClass.GetKeySelector<User>(dto.OrderByColumn));
+                }
+
+                // Xây dựng biểu thức sắp xếp động từ chuỗi sắp xếp được truyền vào từ dto
+
+                PagedList<User> pagedUsers = PagedList<User>.ToPagedList(query, dto.Page, dto.PageSize);
+                return pagedUsers;
+            }
+            catch (Exception ex)
+            {
+
+                throw new Exception(ex.Message);
+            }
+        }
     }
 }
