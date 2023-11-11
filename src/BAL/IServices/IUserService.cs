@@ -7,7 +7,7 @@ namespace aaa_aspdotnet.src.BAL.IServices
 {
     public interface IUserService
     {
-        Task<Response> CreateUser(CreateUserDTO dto);
+      //  Task<Response> CreateUser(CreateUserDTO dto);
         Task<User> GetUserById(string id);
         Task<Response> CreateOrUpdateUserWithHelper(CreateOrUpdateUserDTO dto, string? userId=null);
         PagedList<User> GetUsers(PaginationFilterDto dto);

@@ -60,13 +60,7 @@ namespace aaa_aspdotnet.src.BAL.Services
         {
             return await userRepository.GetById(id);
         }
-        public async Task<User> GetUserByCondition(string id)
-        {
-            return await userRepository.FindByCondition(u => u.UserId == id);
-        }
-
-        
-     
+       
         public async Task<Response> CreateOrUpdateUserWithHelper(CreateOrUpdateUserDTO dto, string? userId)
         {
            
@@ -103,14 +97,7 @@ namespace aaa_aspdotnet.src.BAL.Services
                     return new Response(HttpStatusCode.OK, message,result:  JsonConvert.DeserializeObject(data.ToString()));
                 }    
               
-
-              
-
-        
-
                 //  return new Response(HttpStatusCode.OK,message, JsonConvert.DeserializeObject(data.ToString()));
-
-
             }
             catch (Exception ex)
             {
@@ -120,34 +107,7 @@ namespace aaa_aspdotnet.src.BAL.Services
         }
 
 
-        private Expression<Func<T, bool>> BuildSearchExpression<T>(string[] columns, string searchKeyword)
-        {
-            var parameter = Expression.Parameter(typeof(T), "entity");
-            var containsMethod = typeof(string).GetMethod("Contains", new[] { typeof(string) });
-
-            Expression searchExpression = null; // Biểu thức tìm kiếm gốc
-
-            foreach (var column in columns)
-            {
-                var propertyExpression = Expression.Property(parameter, column);
-                var searchValue = Expression.Constant(searchKeyword);
-
-                var containsExpression = Expression.Call(propertyExpression, containsMethod, searchValue);
-
-                // Thêm biểu thức con vào biểu thức tìm kiếm gốc
-                if (searchExpression == null)
-                {
-                    searchExpression = containsExpression;
-                }
-                else
-                {
-                    searchExpression = Expression.OrElse(searchExpression, containsExpression);
-                }
-            }
-
-            return Expression.Lambda<Func<T, bool>>(searchExpression, parameter);
-        }
-
+        
 
         public PagedList<User> GetUsers(PaginationFilterDto dto)
         {
@@ -161,7 +121,7 @@ namespace aaa_aspdotnet.src.BAL.Services
                     var columns = dto.SearchColumns.Split(',');
 
                     // Create an expression for the search
-                    var searchExpression = BuildSearchExpression<User>(columns, dto.Search);
+                    var searchExpression = SharedClass.BuildSearchExpression<User>(columns, dto.Search);
 
                     // Apply the search expression to the query
                     query = query.Where(searchExpression);

@@ -67,5 +67,9 @@ namespace aaa_aspdotnet.src.DAL.Repositories
             return await _context.Set<T>().Where(expression).FirstOrDefaultAsync();
         }
 
+        public async Task<T> GetById(int id)
+        {
+            return await _set.FindAsync(id);
+        }
     }
 }

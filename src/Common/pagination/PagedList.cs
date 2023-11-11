@@ -9,6 +9,18 @@
 
         public bool HasPrevious => CurrentPage > 1;
         public bool HasNext => CurrentPage < TotalPages;
+        public object GetMetadata()
+        {
+            return new
+            {
+                TotalCount,
+                PageSize,
+                CurrentPage,
+                TotalPages,
+                HasNext,
+                HasPrevious
+            };
+        }
 
         public PagedList(List<T> items, int count, int pageNumber, int pageSize)
         {
@@ -19,7 +31,7 @@
 
             AddRange(items);
         }
-
+     
         public static PagedList<T> ToPagedList(IQueryable<T> source, int pageNumber=1, int pageSize=10)
         {
             var count = source.Count();
@@ -27,5 +39,6 @@
 
             return new PagedList<T>(items, count, pageNumber, pageSize);
         }
+      
     }
 }

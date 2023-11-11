@@ -35,6 +35,7 @@ namespace aaa_aspdotnet.src.Common.Helpers
                 }
             }
         }
+      
         public static int ExecuteNonQuery(string sqlQuery, Dictionary<string, object> parameters = null)
         {
             using (SqlConnection connection = new SqlConnection(_connectionString))
