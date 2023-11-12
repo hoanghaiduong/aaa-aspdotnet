@@ -37,7 +37,7 @@ namespace aaa_aspdotnet.src.Controllers
         {
             try
             {
-
+                
                 var parameters = new Dictionary<string, object>
                 {
                         { "@Username", dto.UserName },
@@ -45,11 +45,11 @@ namespace aaa_aspdotnet.src.Controllers
 
                 };
 
+                var result = await _userService.CreateOrUpdateUserWithHelper(new CreateOrUpdateUserDTO { UserName=dto.UserName,Password=dto.Password});
+                if (result.Status == HttpStatusCode.BadRequest.ToString()) return BadRequest(new Response(HttpStatusCode.BadRequest, result.Message));
 
-                var result = SQLHelper.ExecuteStoredProcedure("PSP_RegisterUser", parameters);
 
-
-                return new Response(HttpStatusCode.OK, "ok", result[0].Values);
+                return result;
             }
             catch (Exception ex)
             {

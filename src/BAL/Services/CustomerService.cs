@@ -70,7 +70,7 @@ namespace aaa_aspdotnet.src.BAL.Services
 
         public Task<Customer> GetCustomerByNameAsync(string name)
         {
-            throw new NotImplementedException();
+            return null;
         }
 
         public  PagedList<Customer> GetCustomers(PaginationFilterDto dto)

@@ -70,15 +70,15 @@ namespace aaa_aspdotnet.src.BAL.Services
                   {
                             { "@UserId", userId??(object)DBNull.Value },
                             { "@Username", dto.UserName?? (object)DBNull.Value },
-                                    { "@Password", dto.Password ??(object) DBNull.Value },
-                                    { "@Email", dto.Email ??(object) DBNull.Value },
-                                    { "@Gender", dto.Gender ??(object) DBNull.Value }, // Sử dụng DBNull.Value nếu dto.Gender là null
-                                    { "@Avatar", dto.Avatar ??(object) DBNull.Value },
-                                    { "@RefreshToken", (object)dto.RefreshToken ??(object) DBNull.Value }, // Sử dụng DBNull.Value nếu dto.RefreshToken là null
-                                    { "@PhoneNumber", dto.PhoneNumber ??(object) DBNull.Value },
-                                    { "@RoleId", dto.RoleId ??(object) DBNull.Value },
-                                    { "@IsActived", dto.IsActived}, // Sử dụng DBNull.Value nếu dto.IsActived là null
-                                    { "@IsDeleted", dto.IsDeleted } // Sử dụng DBNull.Value nếu dto.IsDeleted là null
+                            { "@Password", dto.Password ??(object) DBNull.Value },
+                            { "@Email", dto.Email ??(object) DBNull.Value },
+                            { "@Gender", dto.Gender ??(object) DBNull.Value }, // Sử dụng DBNull.Value nếu dto.Gender là null
+                            { "@Avatar", dto.Avatar ??(object) DBNull.Value },
+                            { "@RefreshToken", (object)dto.RefreshToken ??(object) DBNull.Value }, // Sử dụng DBNull.Value nếu dto.RefreshToken là null
+                            { "@PhoneNumber", dto.PhoneNumber ??(object) DBNull.Value },
+                            { "@RoleId", dto.RoleId ??(object) DBNull.Value },
+                            { "@IsActived", dto.IsActived}, // Sử dụng DBNull.Value nếu dto.IsActived là null
+                            { "@IsDeleted", dto.IsDeleted } // Sử dụng DBNull.Value nếu dto.IsDeleted là null
             };
 
 
@@ -90,7 +90,7 @@ namespace aaa_aspdotnet.src.BAL.Services
 
                 if (!(bool)status)
                 {
-                    return new Response(HttpStatusCode.BadRequest,message);
+                    return  new Response(HttpStatusCode.BadRequest,message);
                 }
                 else
                 {
