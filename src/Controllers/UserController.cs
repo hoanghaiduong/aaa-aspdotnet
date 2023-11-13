@@ -1,7 +1,9 @@
 ﻿using aaa_aspdotnet.src.BAL.IServices;
+using aaa_aspdotnet.src.BAL.Services;
 using aaa_aspdotnet.src.Common.DTO;
 using aaa_aspdotnet.src.Common.Helpers;
 using aaa_aspdotnet.src.Common.pagination;
+using aaa_aspdotnet.src.DAL.Entities;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -36,12 +38,24 @@ namespace aaa_aspdotnet.src.Controllers
         [HttpPost("create")]
         public async Task<ActionResult<Response>> CreateUser([FromBody] CreateOrUpdateUserDTO dto)
         {
-            var creating = await _userService.CreateOrUpdateUserWithHelper(dto);
-            if(creating.Status==HttpStatusCode.BadRequest.ToString())
+
+            try
             {
-                return BadRequest(creating);
+                var user = await _userService.CreateOrUpdateUserWithHelper(dto);
+                return Ok(new Response(HttpStatusCode.OK, "Tạo người dùng mới thành công !", user));
             }
-            return Ok(creating);
+            catch (SqlException sqlEx)
+            {
+                return BadRequest(new Response(HttpStatusCode.BadRequest, sqlEx.Message));
+
+            }
+
+            catch (Exception ex)
+            {
+
+                return BadRequest(new Response(HttpStatusCode.BadRequest, ex.Message));
+            }
+
         }
         [Authorize]
         [HttpPost("update")]
@@ -63,20 +77,20 @@ namespace aaa_aspdotnet.src.Controllers
                   Gender = dto.Gender,
                   Avatar = dto.Avatar,
                },decodeToken.Id);
-                if (isUpdate.Status == HttpStatusCode.OK.ToString())
-                {
-                    return Ok(isUpdate);
-                }
-                else
-                {
-                    return BadRequest(isUpdate.Message);
-                }
+                return Ok(new Response(HttpStatusCode.OK, "Cập nhật người dùng mới thành công !", isUpdate));
             }
+            catch (SqlException sqlEx)
+            {
+                return BadRequest(new Response(HttpStatusCode.BadRequest, sqlEx.Message));
+
+            }
+
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+
+                return BadRequest(new Response(HttpStatusCode.BadRequest, ex.Message));
             }
-            
+
         }
        public class UpdateUserByAdminDTO
         {
@@ -103,18 +117,18 @@ namespace aaa_aspdotnet.src.Controllers
                    IsActived=dto.IsActived,
                    IsDeleted=dto.IsDeleted
                 }, id);
-                if(isUpdate.Status==HttpStatusCode.OK.ToString())
-                {
-                    return Ok(isUpdate);
-                }    
-                else
-                {
-                    return BadRequest(isUpdate.Message);
-                }    
+                return Ok(new Response(HttpStatusCode.OK, "Cập nhật người dùng mới thành công !", isUpdate));
             }
+            catch (SqlException sqlEx)
+            {
+                return BadRequest(new Response(HttpStatusCode.BadRequest, sqlEx.Message));
+
+            }
+
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+
+                return BadRequest(new Response(HttpStatusCode.BadRequest, ex.Message));
             }
         }
 

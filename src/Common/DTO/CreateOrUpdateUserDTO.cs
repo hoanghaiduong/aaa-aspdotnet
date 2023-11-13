@@ -15,6 +15,9 @@ namespace aaa_aspdotnet.src.Common.DTO
         public string? PhoneNumber { get; set; }
         public bool? Gender { get; set; }
         public string? Avatar { get; set; }
+        public string? Address { get; set; }
+        public string? Zalo { get; set; }
+        public string? PhoneNumber2 { get; set; }
         public string RefreshToken { get; set; }
         public string? RoleId { get; set; }
         public bool IsActived { get; set; } = true;

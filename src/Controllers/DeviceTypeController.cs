@@ -1,7 +1,6 @@
 ﻿using aaa_aspdotnet.src.BAL.IServices;
 using aaa_aspdotnet.src.Common.DTO;
 using aaa_aspdotnet.src.Common.pagination;
-using aaa_aspdotnet.src.DAL.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;

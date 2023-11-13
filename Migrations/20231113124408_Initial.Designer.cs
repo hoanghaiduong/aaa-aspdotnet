@@ -9,11 +9,11 @@ using aaa_aspdotnet.src.DAL.Entities;
 
 #nullable disable
 
-namespace DAL.Migrations
+namespace aaa_aspdotnet.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20231109171411_allUniqueFieldUsernameandEmail")]
-    partial class allUniqueFieldUsernameandEmail
+    [Migration("20231113124408_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,48 +25,6 @@ namespace DAL.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("aaa_aspdotnet.src.DAL.Entities.Customer", b =>
-                {
-                    b.Property<int>("CustomerId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("CustomerID");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CustomerId"));
-
-                    b.Property<string>("Address")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<string>("CustomerName")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("Email")
-                        .HasMaxLength(50)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(50)");
-
-                    b.Property<bool>("IsDelete")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Phone")
-                        .HasMaxLength(20)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(20)");
-
-                    b.Property<string>("Phone2")
-                        .HasMaxLength(20)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(20)");
-
-                    b.HasKey("CustomerId")
-                        .HasName("PK__Customer__A4AE64B8E59BF282");
-
-                    b.ToTable("Customer", (string)null);
-                });
-
             modelBuilder.Entity("aaa_aspdotnet.src.DAL.Entities.DailyDivision", b =>
                 {
                     b.Property<int>("DeviceId")
@@ -77,9 +35,9 @@ namespace DAL.Migrations
                         .HasColumnType("int")
                         .HasColumnName("PlanID");
 
-                    b.Property<int>("TechnicalId")
-                        .HasColumnType("int")
-                        .HasColumnName("TechnicalID");
+                    b.Property<string>("UserId")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<string>("AfterImage")
                         .HasMaxLength(255)
@@ -134,14 +92,14 @@ namespace DAL.Migrations
                         .HasColumnType("datetime")
                         .HasDefaultValueSql("(getdate())");
 
-                    b.HasKey("DeviceId", "PlanId", "TechnicalId")
+                    b.HasKey("DeviceId", "PlanId", "UserId")
                         .HasName("pk_DailyDivision");
 
                     b.HasIndex("PlanId");
 
                     b.HasIndex("StatusId");
 
-                    b.HasIndex("TechnicalId");
+                    b.HasIndex("UserId");
 
                     b.ToTable("DailyDivision", (string)null);
                 });
@@ -262,8 +220,11 @@ namespace DAL.Migrations
             modelBuilder.Entity("aaa_aspdotnet.src.DAL.Entities.DeviceType", b =>
                 {
                     b.Property<int>("TypeId")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasColumnName("TypeID");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TypeId"));
 
                     b.Property<bool>("IsDelete")
                         .HasColumnType("bit");
@@ -296,10 +257,6 @@ namespace DAL.Migrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(50)");
 
-                    b.Property<int>("CustomerId")
-                        .HasColumnType("int")
-                        .HasColumnName("CustomerID");
-
                     b.Property<string>("FacName")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -318,10 +275,15 @@ namespace DAL.Migrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(20)");
 
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
                     b.HasKey("FacId")
                         .HasName("PK__Factory__815081C831BD8E9C");
 
-                    b.HasIndex("CustomerId");
+                    b.HasIndex("UserId");
 
                     b.ToTable("Factory", (string)null);
                 });
@@ -393,53 +355,6 @@ namespace DAL.Migrations
                     b.ToTable("Roles");
                 });
 
-            modelBuilder.Entity("aaa_aspdotnet.src.DAL.Entities.Technical", b =>
-                {
-                    b.Property<int>("TechnicalId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("TechnicalID");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TechnicalId"));
-
-                    b.Property<string>("Address")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<string>("Email")
-                        .HasMaxLength(255)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<bool>("IsDelete")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Phone")
-                        .HasMaxLength(20)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(20)");
-
-                    b.Property<string>("Phone2")
-                        .HasMaxLength(20)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(20)");
-
-                    b.Property<string>("TechnicalName")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("Zalo")
-                        .HasMaxLength(20)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(20)");
-
-                    b.HasKey("TechnicalId")
-                        .HasName("PK__Technica__F6E0649FE62EF743");
-
-                    b.ToTable("Technical", (string)null);
-                });
-
             modelBuilder.Entity("aaa_aspdotnet.src.DAL.Entities.User", b =>
                 {
                     b.Property<string>("UserId")
@@ -447,6 +362,9 @@ namespace DAL.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)")
                         .HasDefaultValueSql("(newid())");
+
+                    b.Property<string>("Address")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Avatar")
                         .HasMaxLength(255)
@@ -484,6 +402,9 @@ namespace DAL.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<string>("PhoneNumber2")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("RefreshToken")
                         .HasColumnType("nvarchar(max)");
 
@@ -502,13 +423,16 @@ namespace DAL.Migrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(255)");
 
+                    b.Property<string>("Zalo")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("UserId");
 
                     b.HasIndex("RoleId");
 
-                    b.HasIndex("Username", "Email")
+                    b.HasIndex(new[] { "Username", "Email" }, "IX_Users_Username_Email")
                         .IsUnique()
-                        .HasFilter("[Email] IS NOT NULL");
+                        .HasFilter("([Email] IS NOT NULL)");
 
                     b.ToTable("Users");
                 });
@@ -559,11 +483,11 @@ namespace DAL.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_DailyDivision_WorkStatus");
 
-                    b.HasOne("aaa_aspdotnet.src.DAL.Entities.Technical", "Technical")
+                    b.HasOne("aaa_aspdotnet.src.DAL.Entities.User", "User")
                         .WithMany("DailyDivisions")
-                        .HasForeignKey("TechnicalId")
+                        .HasForeignKey("UserId")
                         .IsRequired()
-                        .HasConstraintName("fk_DailyDivision_Technical");
+                        .HasConstraintName("FK_DailyDivision_Users");
 
                     b.Navigation("Device");
 
@@ -571,7 +495,7 @@ namespace DAL.Migrations
 
                     b.Navigation("Status");
 
-                    b.Navigation("Technical");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("aaa_aspdotnet.src.DAL.Entities.DetailPlan", b =>
@@ -622,13 +546,13 @@ namespace DAL.Migrations
 
             modelBuilder.Entity("aaa_aspdotnet.src.DAL.Entities.Factory", b =>
                 {
-                    b.HasOne("aaa_aspdotnet.src.DAL.Entities.Customer", "Customer")
+                    b.HasOne("aaa_aspdotnet.src.DAL.Entities.User", "User")
                         .WithMany("Factories")
-                        .HasForeignKey("CustomerId")
+                        .HasForeignKey("UserId")
                         .IsRequired()
-                        .HasConstraintName("fk_Customer_Factory");
+                        .HasConstraintName("FK_Factory_Users");
 
-                    b.Navigation("Customer");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("aaa_aspdotnet.src.DAL.Entities.User", b =>
@@ -639,11 +563,6 @@ namespace DAL.Migrations
                         .HasConstraintName("FK_Users_Roles");
 
                     b.Navigation("Role");
-                });
-
-            modelBuilder.Entity("aaa_aspdotnet.src.DAL.Entities.Customer", b =>
-                {
-                    b.Navigation("Factories");
                 });
 
             modelBuilder.Entity("aaa_aspdotnet.src.DAL.Entities.Device", b =>
@@ -675,9 +594,11 @@ namespace DAL.Migrations
                     b.Navigation("Users");
                 });
 
-            modelBuilder.Entity("aaa_aspdotnet.src.DAL.Entities.Technical", b =>
+            modelBuilder.Entity("aaa_aspdotnet.src.DAL.Entities.User", b =>
                 {
                     b.Navigation("DailyDivisions");
+
+                    b.Navigation("Factories");
                 });
 
             modelBuilder.Entity("aaa_aspdotnet.src.DAL.Entities.WorkStatus", b =>

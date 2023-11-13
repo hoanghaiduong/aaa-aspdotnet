@@ -15,8 +15,6 @@ public partial class AppDbContext : DbContext
     {
     }
 
-    public virtual DbSet<Customer> Customers { get; set; }
-
     public virtual DbSet<DailyDivision> DailyDivisions { get; set; }
 
     public virtual DbSet<DetailPlan> DetailPlans { get; set; }
@@ -31,8 +29,6 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<Role> Roles { get; set; }
 
-    public virtual DbSet<Technical> Technicals { get; set; }
-
     public virtual DbSet<User> Users { get; set; }
 
     public virtual DbSet<WorkStatus> WorkStatuses { get; set; }
@@ -43,35 +39,15 @@ public partial class AppDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Customer>(entity =>
-        {
-            entity.HasKey(e => e.CustomerId).HasName("PK__Customer__A4AE64B8E59BF282");
-
-            entity.ToTable("Customer");
-
-            entity.Property(e => e.CustomerId).HasColumnName("CustomerID");
-            entity.Property(e => e.Address).HasMaxLength(255);
-            entity.Property(e => e.CustomerName).HasMaxLength(50);
-            entity.Property(e => e.Email)
-                .HasMaxLength(50)
-                .IsUnicode(false);
-            entity.Property(e => e.Phone)
-                .HasMaxLength(20)
-                .IsUnicode(false);
-            entity.Property(e => e.Phone2)
-                .HasMaxLength(20)
-                .IsUnicode(false);
-        });
-
         modelBuilder.Entity<DailyDivision>(entity =>
         {
-            entity.HasKey(e => new { e.DeviceId, e.PlanId, e.TechnicalId }).HasName("pk_DailyDivision");
+            entity.HasKey(e => new { e.DeviceId, e.PlanId, e.UserId }).HasName("pk_DailyDivision");
 
             entity.ToTable("DailyDivision");
 
             entity.Property(e => e.DeviceId).HasColumnName("DeviceID");
             entity.Property(e => e.PlanId).HasColumnName("PlanID");
-            entity.Property(e => e.TechnicalId).HasColumnName("TechnicalID");
+            entity.Property(e => e.UserId).HasMaxLength(255);
             entity.Property(e => e.AfterImage)
                 .HasMaxLength(255)
                 .IsUnicode(false);
@@ -105,10 +81,10 @@ public partial class AppDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("fk_DailyDivision_WorkStatus");
 
-            entity.HasOne(d => d.Technical).WithMany(p => p.DailyDivisions)
-                .HasForeignKey(d => d.TechnicalId)
+            entity.HasOne(d => d.User).WithMany(p => p.DailyDivisions)
+                .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("fk_DailyDivision_Technical");
+                .HasConstraintName("FK_DailyDivision_Users");
         });
 
         modelBuilder.Entity<DetailPlan>(entity =>
@@ -183,9 +159,7 @@ public partial class AppDbContext : DbContext
         {
             entity.HasKey(e => e.TypeId);
 
-            entity.Property(e => e.TypeId)
-                .ValueGeneratedNever()
-                .HasColumnName("TypeID");
+            entity.Property(e => e.TypeId).HasColumnName("TypeID");
             entity.Property(e => e.TypeName)
                 .HasMaxLength(50)
                 .IsUnicode(false);
@@ -202,7 +176,6 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.Alias)
                 .HasMaxLength(50)
                 .IsUnicode(false);
-            entity.Property(e => e.CustomerId).HasColumnName("CustomerID");
             entity.Property(e => e.FacName).HasMaxLength(50);
             entity.Property(e => e.Phone)
                 .HasMaxLength(20)
@@ -210,11 +183,12 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.Phone2)
                 .HasMaxLength(20)
                 .IsUnicode(false);
+            entity.Property(e => e.UserId).HasMaxLength(255);
 
-            entity.HasOne(d => d.Customer).WithMany(p => p.Factories)
-                .HasForeignKey(d => d.CustomerId)
+            entity.HasOne(d => d.User).WithMany(p => p.Factories)
+                .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("fk_Customer_Factory");
+                .HasConstraintName("FK_Factory_Users");
         });
 
         modelBuilder.Entity<Plan>(entity =>
@@ -241,31 +215,12 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.Name).HasMaxLength(100);
         });
 
-        modelBuilder.Entity<Technical>(entity =>
-        {
-            entity.HasKey(e => e.TechnicalId).HasName("PK__Technica__F6E0649FE62EF743");
-
-            entity.ToTable("Technical");
-
-            entity.Property(e => e.TechnicalId).HasColumnName("TechnicalID");
-            entity.Property(e => e.Address).HasMaxLength(255);
-            entity.Property(e => e.Email)
-                .HasMaxLength(255)
-                .IsUnicode(false);
-            entity.Property(e => e.Phone)
-                .HasMaxLength(20)
-                .IsUnicode(false);
-            entity.Property(e => e.Phone2)
-                .HasMaxLength(20)
-                .IsUnicode(false);
-            entity.Property(e => e.TechnicalName).HasMaxLength(50);
-            entity.Property(e => e.Zalo)
-                .HasMaxLength(20)
-                .IsUnicode(false);
-        });
-
         modelBuilder.Entity<User>(entity =>
         {
+            entity.HasIndex(e => new { e.Username, e.Email }, "IX_Users_Username_Email")
+                .IsUnique()
+                .HasFilter("([Email] IS NOT NULL)");
+
             entity.Property(e => e.UserId)
                 .HasMaxLength(255)
                 .HasDefaultValueSql("(newid())");

@@ -46,9 +46,9 @@ builder.Services.AddDbContext<AppDbContext>(x=>x.UseSqlServer(configuration.GetC
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
-builder.Services.AddScoped<ICustomerService, CustomerService>();
-builder.Services.AddScoped<ITechnicalService, TechnicalService>();
+
 builder.Services.AddScoped<IDeviceTypesService, DeviceTypesService>();
+builder.Services.AddScoped<IDeviceService, DeviceService>();
 builder.Services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
 
 builder.Services.AddEndpointsApiExplorer();

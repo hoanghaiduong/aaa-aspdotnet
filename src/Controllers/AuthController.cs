@@ -1,16 +1,13 @@
-﻿using aaa_aspdotnet.Middlewares;
-using aaa_aspdotnet.src.BAL.IServices;
+﻿using aaa_aspdotnet.src.BAL.IServices;
 using aaa_aspdotnet.src.Common.DTO;
 using aaa_aspdotnet.src.Common.Helpers;
 using aaa_aspdotnet.src.DAL.Entities;
-
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Builder.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Net;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace aaa_aspdotnet.src.Controllers
 {
@@ -46,15 +43,18 @@ namespace aaa_aspdotnet.src.Controllers
                 };
 
                 var result = await _userService.CreateOrUpdateUserWithHelper(new CreateOrUpdateUserDTO { UserName=dto.UserName,Password=dto.Password});
-                if (result.Status == HttpStatusCode.BadRequest.ToString()) return BadRequest(new Response(HttpStatusCode.BadRequest, result.Message));
-
-
-                return result;
+                return Ok(new Response(HttpStatusCode.OK, "Đăng ký người dùng mới thành công !", result));
             }
+            catch (SqlException sqlEx)
+            {
+                return BadRequest(new Response(HttpStatusCode.BadRequest, sqlEx.Message));
+
+            }
+
             catch (Exception ex)
             {
 
-                return new Response(HttpStatusCode.BadRequest, ex.Message);
+                return BadRequest(new Response(HttpStatusCode.BadRequest, ex.Message));
             }
 
 
@@ -210,12 +210,17 @@ namespace aaa_aspdotnet.src.Controllers
         {
             try
             {
-                var decodeToken = await _jwtService.DecodeJwtToken(token.AccessToken);
+                return Ok(
+                    new
+                    {
+                        HttpContext.User.Identities
+                    });
+                //var decodeToken = await _jwtService.DecodeJwtToken(token.AccessToken);
 
-                return Ok(new
-                {
-                    decodeToken
-                });
+                //return Ok(new
+                //{
+                //    decodeToken
+                //});
             }
             catch (Exception ex)
             {

@@ -1,6 +1,5 @@
 ﻿using aaa_aspdotnet.src.Common.Enums;
 using aaa_aspdotnet.src.Common.pagination;
-using aaa_aspdotnet.src.DAL.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Linq;

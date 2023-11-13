@@ -1,15 +1,12 @@
 ﻿using aaa_aspdotnet.src.BAL.IServices;
 using aaa_aspdotnet.src.Common.DTO;
-using aaa_aspdotnet.src.Common.Enums;
-using aaa_aspdotnet.src.Common.Helpers;
 using aaa_aspdotnet.src.Common.pagination;
 using aaa_aspdotnet.src.Common.shared;
 using aaa_aspdotnet.src.DAL.Entities;
 using aaa_aspdotnet.src.DAL.IRepositories;
-using Microsoft.IdentityModel.Tokens;
-using Newtonsoft.Json;
-using System.Linq;
-using System.Linq.Expressions;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
+using System.Data;
 using System.Net;
 
 
@@ -60,83 +57,92 @@ namespace aaa_aspdotnet.src.BAL.Services
         {
             return await userRepository.GetById(id);
         }
-       
-        public async Task<Response> CreateOrUpdateUserWithHelper(CreateOrUpdateUserDTO dto, string? userId)
+
+        public async Task<User> CreateOrUpdateUserWithHelper(CreateOrUpdateUserDTO dto, string? userId)
         {
-           
             try
             {
-                var parameters = new Dictionary<string, object>()
-                  {
-                            { "@UserId", userId??(object)DBNull.Value },
-                            { "@Username", dto.UserName?? (object)DBNull.Value },
-                            { "@Password", dto.Password ??(object) DBNull.Value },
-                            { "@Email", dto.Email ??(object) DBNull.Value },
-                            { "@Gender", dto.Gender ??(object) DBNull.Value }, // Sử dụng DBNull.Value nếu dto.Gender là null
-                            { "@Avatar", dto.Avatar ??(object) DBNull.Value },
-                            { "@RefreshToken", (object)dto.RefreshToken ??(object) DBNull.Value }, // Sử dụng DBNull.Value nếu dto.RefreshToken là null
-                            { "@PhoneNumber", dto.PhoneNumber ??(object) DBNull.Value },
-                            { "@RoleId", dto.RoleId ??(object) DBNull.Value },
-                            { "@IsActived", dto.IsActived}, // Sử dụng DBNull.Value nếu dto.IsActived là null
-                            { "@IsDeleted", dto.IsDeleted } // Sử dụng DBNull.Value nếu dto.IsDeleted là null
-            };
+                var userIdParam = new SqlParameter("@UserId", SqlDbType.NVarChar, 128);
 
-
-
-                var result = SQLHelper.ExecuteStoredProcedure("PSP_CreateOrUpdateUser", parameters);
-                var status = result[0].Where(r => r.Key == "Result").FirstOrDefault().Value;
-                var message = result[0].Where(r => r.Key == "Status").FirstOrDefault().Value.ToString();
-                var data = result[0].Where(r => r.Key == "Data").FirstOrDefault().Value;
-
-                if (!(bool)status)
+                if (!string.IsNullOrEmpty(userId))
                 {
-                    return  new Response(HttpStatusCode.BadRequest,message);
+                    userIdParam.Value = userId; // Use userId for update operation
                 }
                 else
                 {
-                    return new Response(HttpStatusCode.OK, message,result:  JsonConvert.DeserializeObject(data.ToString()));
-                }    
-              
+                    userIdParam.Direction = ParameterDirection.Output;
+                }
+                SqlParameter[] parameters = new SqlParameter[]
+                {
+                    userIdParam,
+                    new SqlParameter("@Username", SqlDbType.NVarChar, 255) { Value = dto.UserName ?? (object)DBNull.Value },
+                    new SqlParameter("@Password", SqlDbType.NVarChar, 255) { Value = dto.Password ?? (object)DBNull.Value  },
+                    new SqlParameter("@Email", SqlDbType.NVarChar, 255) { Value = dto.Email ?? (object)DBNull.Value  },
+                    new SqlParameter("@Gender", SqlDbType.Bit) { Value = dto.Gender ?? (object)DBNull.Value  },
+                    new SqlParameter("@Avatar", SqlDbType.NVarChar, 255) { Value = dto.Avatar ?? (object)DBNull.Value  },
+                    new SqlParameter("@Address", SqlDbType.NVarChar, 255) { Value = dto.Address ?? (object)DBNull.Value  },
+                    new SqlParameter("@Zalo", SqlDbType.NVarChar, 100) { Value = dto.Zalo ?? (object)DBNull.Value  },
+                    new SqlParameter("@PhoneNumber2", SqlDbType.NVarChar, 100) { Value = dto.PhoneNumber2 ?? (object)DBNull.Value  },
+                    new SqlParameter("@RefreshToken", SqlDbType.NVarChar, 255) { Value = dto.RefreshToken ?? (object)DBNull.Value  },
+                    new SqlParameter("@PhoneNumber", SqlDbType.NVarChar, 15) { Value = dto.PhoneNumber ?? (object)DBNull.Value  },
+                    new SqlParameter("@RoleId", SqlDbType.NVarChar, 128) { Value = dto.RoleId ?? (object)DBNull.Value  },
+                    new SqlParameter("@IsActived", SqlDbType.Bit) { Value = dto.IsActived },
+                    new SqlParameter("@IsDeleted", SqlDbType.Bit) { Value = dto.IsDeleted },
+                };
+
+
+                // Define the list of SQL parameters
+
+                // Execute the stored procedure with input and output parameters
+                var excute = await _context.Database.ExecuteSqlRawAsync("EXEC PSP_CreateOrUpdateUser @UserId OUTPUT, @Username, @Password, @Email, @Gender, @Avatar, @Address, @Zalo, @PhoneNumber2, @RefreshToken, @PhoneNumber, @RoleId, @IsActived, @IsDeleted", parameters);
                 //  return new Response(HttpStatusCode.OK,message, JsonConvert.DeserializeObject(data.ToString()));
+                // Get the DeviceID from the output parameter
+                Console.WriteLine(excute.ToString());
+                // Lấy UserId từ tham số đầu ra
+                var userIdAfter = userIdParam.Value as string;
+
+
+                // Retrieve the updated/inserted device based on the returned DeviceID
+                var updatedUser = await _context.Users.Where(u => u.UserId == userIdAfter).SingleAsync();
+                if (updatedUser == null)
+                {
+                    throw new Exception("Tạo người dùng thất bại ! ");
+                }
+                return updatedUser;
+
+            }
+            catch (SqlException sqlEx)
+            {
+                Console.WriteLine("SQL Error: " + sqlEx.Message);
+
+                // Xử lý ngoại lệ từ cơ sở dữ liệu
+                throw sqlEx;
             }
             catch (Exception ex)
             {
+                Console.WriteLine("Error: " + ex.Message);
 
-                return new Response(HttpStatusCode.BadRequest, ex.Message);
+                throw ex;
+                // Xử lý các ngoại lệ khác (không phải từ SQL)
             }
         }
 
 
-        
+
+
 
         public PagedList<User> GetUsers(PaginationFilterDto dto)
         {
 
             try
             {
-                var query = userRepository.FindAll();
-                if (!dto.SearchColumns.IsNullOrEmpty() && !dto.Search.IsNullOrEmpty())
-                {
-                    // Split the search columns into an array
-                    var columns = dto.SearchColumns.Split(',');
+                FormattableString sqlQuery = $"EXEC PSP_User_Select @UserId=NULL";
+                var result = SharedClass.GetDataEntitiesWithPaging<User>(
+                    _context,
+                    sqlQuery,
+                    dto);
 
-                    // Create an expression for the search
-                    var searchExpression = SharedClass.BuildSearchExpression<User>(columns, dto.Search);
-
-                    // Apply the search expression to the query
-                    query = query.Where(searchExpression);
-                }
-                if (!dto.OrderByColumn.IsNullOrEmpty())
-                {
-                    query = (dto.SortDirection == ESortDirection.DESC)
-                        ? query.OrderByDescending(SharedClass.GetKeySelector<User>(dto.OrderByColumn))
-                        : query.OrderBy(SharedClass.GetKeySelector<User>(dto.OrderByColumn));
-                }
-
-                // Xây dựng biểu thức sắp xếp động từ chuỗi sắp xếp được truyền vào từ dto
-
-                PagedList<User> pagedUsers = PagedList<User>.ToPagedList(query, dto.Page, dto.PageSize);
-                return pagedUsers;
+                return result;
             }
             catch (Exception ex)
             {

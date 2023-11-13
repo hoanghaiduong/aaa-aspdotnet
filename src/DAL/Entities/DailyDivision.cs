@@ -9,7 +9,7 @@ public partial class DailyDivision
 
     public int PlanId { get; set; }
 
-    public int TechnicalId { get; set; }
+    public string UserId { get; set; } = null!;
 
     public DateTime? WorkDay { get; set; }
 
@@ -43,5 +43,5 @@ public partial class DailyDivision
 
     public virtual WorkStatus Status { get; set; } = null!;
 
-    public virtual Technical Technical { get; set; } = null!;
+    public virtual User User { get; set; } = null!;
 }
